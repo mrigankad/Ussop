@@ -260,10 +260,9 @@ pytest tests/ -v
 
 ---
 
-## 📄 License & Support
+## 📄 License
 
 - **License**: MIT License — See [LICENSE](LICENSE) file for details.
-- **Support**: founders@ussop.ai
 
 > **Ussop v2.0** — Sniper precision. Enterprise ready.
 > *"Every defect is a target, and we never miss."*

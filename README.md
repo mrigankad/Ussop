@@ -4,7 +4,7 @@
 
 Ussop is a production-ready, CPU-based AI visual inspection system that combines object detection (Faster R-CNN) with precise segmentation (NanoSAM) to automate quality control in manufacturing environments.
 
-## Key Features
+## 🌟 Key Features
 
 ✅ **CPU-Only** — No GPU required, runs on standard industrial PCs
 ✅ **Fast Deployment** — Hours to deploy, not months
@@ -17,7 +17,87 @@ Ussop is a production-ready, CPU-based AI visual inspection system that combines
 ✅ **AI Query** — Natural language questions about your inspection data
 ✅ **On-Device Retraining** — Fine-tune models from active-learning annotations
 
-## Quick Start
+---
+
+## 🏗️ Technical Architecture
+
+```mermaid
+graph TD
+    classDef frontend fill:#4EA5D9,stroke:#333,stroke-width:2px,color:#fff;
+    classDef core fill:#2A4494,stroke:#333,stroke-width:2px,color:#fff;
+    classDef ml fill:#F05D5E,stroke:#333,stroke-width:2px,color:#fff;
+    classDef storage fill:#2892D7,stroke:#333,stroke-width:2px,color:#fff;
+    classDef ext fill:#44CFCB,stroke:#333,stroke-width:2px,color:#fff;
+
+    UI(React SPA Dashboard):::frontend
+    API(FastAPI Backend):::core
+    
+    subgraph Inspection Engine
+        Det(Faster-RCNN Detection):::ml
+        Seg(NanoSAM Segmentation):::ml
+        OV(OpenVINO Optimizer):::ml
+    end
+    
+    subgraph Services
+        AL(Active Learning):::core
+        VLM(Vision Language Model):::core
+        Wkr(Background Workers):::core
+    end
+    
+    subgraph Storage layer
+        DB[(PostgreSQL / SQLite)]:::storage
+        Cach[(Redis Cache)]:::storage
+        FS[(Local Image Storage)]:::storage
+    end
+
+    subgraph Hardware & Integrations
+        Cam[Cameras / CCTV]:::ext
+        PLC[Modbus / OPC-UA / MQTT]:::ext
+    end
+
+    UI <-->|REST & WebSockets| API
+    Cam -->|Image Streams| API
+    API <--> Det
+    Det --> Seg
+    Seg --> OV
+    API <--> AL
+    API <--> VLM
+    
+    API <--> Cach
+    API <--> DB
+    API <--> FS
+    
+    Wkr <--> DB
+    Wkr <--> Cach
+    
+    API -->|Hardware Signals| PLC
+```
+
+## 🔄 Inspection Workflow
+
+```mermaid
+sequenceDiagram
+    participant Cam as Camera
+    participant API as Server (FastAPI)
+    participant ML as Inspector (CV)
+    participant DB as Database
+    participant UI as Dashboard (WebSockets)
+    participant EXT as PLC / OPC-UA
+
+    Cam->>API: 1. Send Frame (Trigger)
+    API->>ML: 2. Process Image
+    Note over ML: Detect Objects (Faster R-CNN)
+    Note over ML: Generate Masks (NanoSAM)
+    Note over ML: AI Query Description (VLM)
+    ML-->>API: 3. Inspection Results
+    API->>DB: 4. Save Record & Images
+    API->>EXT: 5. Signal Modbus/OPC-UA/MQTT
+    API->>UI: 6. Push Live Update (WS)
+```
+
+---
+
+## 🚀 Quick Start
 
 ### Option 1: Docker Compose (Recommended)
 
@@ -50,62 +130,35 @@ cd ussop/frontend && npm install && npm run dev
 # Access at http://localhost:8080
 ```
 
-## Project Structure
+---
 
-```
+## 📁 Project Structure
+
+```text
 ussop-project/
 ├── ussop/                      # Production application package
 │   ├── api/                    # FastAPI app + 70+ endpoints
-│   ├── services/               # Inspector, camera, cache, trainer, deployer,
-│   │                           #   active learning, monitoring, notifications,
-│   │                           #   model_trainer, model_deployer, openvino_optimizer
+│   ├── services/               # Core domain services (inspector, models, etc.)
 │   ├── integrations/           # Modbus TCP, MQTT, Webhooks, OPC-UA server
 │   ├── models/                 # SQLAlchemy ORM (9 tables)
-│   ├── config/                 # Pydantic settings
+│   ├── config/                 # Pydantic settings loading
 │   ├── frontend/               # React 18 + TypeScript + Vite SPA
-│   │   └── src/
-│   │       ├── pages/          # Dashboard, Inspect, History, Analytics,
-│   │       │                   #   Annotate, Batch, Query, Alerts, Stations, Config
-│   │       ├── components/     # AppShell, Header, Sidebar, Toast, charts
-│   │       └── lib/            # api.ts (typed client), cn.ts
 │   ├── tests/                  # 437 tests across 13 files — all passing
-│   ├── worker.py               # Background workers (batch, training, alerts, cleanup)
-│   ├── run.py                  # Application entry point
-│   └── setup.py                # Setup wizard
-│
+│   ├── worker.py               # Background workers (batch, training, alerts)
+│   └── run.py                  # Application entry point
 ├── alembic/                    # Database migrations
-│   ├── env.py
-│   └── versions/
-│
-├── docs/                       # Documentation
-│   ├── deployment.md           # Docker + bare-metal deployment guide
-│   ├── api.md                  # REST + WebSocket API reference
-│   ├── onboarding.md           # 8-step customer onboarding
-│   ├── architecture.md         # Technical architecture
-│   └── plan.md                 # Product roadmap
-│
+├── docs/                       # Comprehensive documentation
 ├── examples/                   # Reference implementations (legacy ML code)
-│   ├── pipeline.py             # Detection + segmentation pipeline
-│   ├── detector.py             # Faster R-CNN wrapper
-│   └── predictor.py            # NanoSAM wrapper
-│
-├── scripts/                    # Utility scripts
-│   ├── download_models.py      # Model download
-│   └── migrate.py              # Alembic CLI wrapper
-│
-├── docker/                     # Docker configuration
-│   ├── Dockerfile
-│   ├── docker-compose.yml      # 7-service production stack
-│   ├── nginx/nginx.conf        # TLS, gzip, rate limiting, WS proxy
-│   ├── prometheus/             # Metrics scraping config
-│   └── grafana/                # Dashboard provisioning
-│
+├── scripts/                    # Utility scripts (download_models.py, migrate.py)
+├── docker/                     # Docker configuration (Nginx, Prometheus, Grafana)
 ├── pyproject.toml              # Dependencies (PEP 517)
 ├── .env.example                # Configuration template
 └── README.md                   # This file
 ```
 
-## Documentation
+---
+
+## 📚 Documentation
 
 | Document | Description |
 |---|---|
@@ -115,147 +168,58 @@ ussop-project/
 | [Architecture](docs/architecture.md) | Technical design |
 | [Roadmap](docs/plan.md) | Product roadmap |
 
-## System Requirements
+---
 
-### Minimum
-- **CPU**: Intel Core i5-10400 (6+ cores)
-- **RAM**: 16 GB
-- **Storage**: 256 GB SSD
-- **OS**: Windows 10+ or Ubuntu 20.04+
+## ⚙️ System Requirements
 
-### Recommended
-- **CPU**: Intel Core i7-12700 (12 cores)
-- **RAM**: 32 GB
-- **Storage**: 512 GB NVMe SSD
-- **OS**: Ubuntu 22.04 LTS
+- **Minimum**: Intel Core i5-10400 (6+ cores), 16GB RAM, 256GB SSD, Win10/Ubuntu 20.04
+- **Recommended**: Intel Core i7-12700 (12 cores), 32GB RAM, 512GB NVMe SSD, Ubuntu 22.04 LTS
 
-## API
+---
 
-Interactive Swagger docs at `http://localhost:8080/docs`
+## 🔌 Core API Endpoints
 
-### Key Endpoints
+Interactive Swagger docs available at `http://localhost:8080/docs`
 
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/v1/inspect` | Upload and inspect image |
 | `GET` | `/api/v1/inspections` | List inspection history |
-| `GET` | `/api/v1/statistics` | Dashboard statistics (cached 30 s) |
-| `GET` | `/api/v1/trends` | Trend data (cached 60 s) |
+| `GET` | `/api/v1/statistics` | Dashboard statistics (cached 30s) |
 | `POST` | `/api/v1/query` | Natural language query |
-| `GET` | `/api/v1/alerts` | Alert list with filters |
-| `POST` | `/api/v1/batch/jobs` | Create batch job |
-| `POST` | `/api/v1/training/start` | Start model fine-tuning |
 | `POST` | `/api/v1/models/deploy` | Hot-swap inference model |
 | `GET` | `/api/v1/opcua/status` | OPC-UA server status |
-| `GET` | `/api/v1/openvino/status` | OpenVINO optimizer status |
-| `GET` | `/api/v1/health` | Health check |
 | `WS` | `/ws/dashboard` | Real-time dashboard push |
 
-## Testing
+---
+
+## 🛠️ Testing & Performance
+
+- **Inference**: < 1s on Intel i5 (MobileNet + NanoSAM)
+- **Throughput**: 30+ inspections/minute
+- **Accuracy**: > 85% mAP (Detection), > 80% IoU (Segmentation)
 
 ```bash
-# Run all tests
+# Run all tests (437 passing tests)
 cd ussop
 pytest tests/ -v
-
-# Run with coverage
-pytest tests/ -v --cov=. --cov-report=html
-
-# Run a specific module
-pytest tests/test_inspector.py -v
 ```
 
-437 tests across 13 files — all passing.
+---
 
-## Configuration
-
-Copy `.env.example` to `.env` and customize:
-
-```env
-# Core
-DEBUG=false
-SECRET_KEY=change-this-in-production
-
-# Camera
-CAMERA_TYPE=mock          # mock | usb | file | gige
-
-# ML
-DETECTOR_BACKBONE=mobilenet   # mobilenet | resnet50
-
-# Integrations
-MODBUS_ENABLED=false
-MQTT_ENABLED=false
-OPCUA_ENABLED=false           # expose OPC-UA server on port 4840
-OPENVINO_ENABLED=false        # use Intel OpenVINO acceleration
-
-# Redis (optional — in-process cache used when not set)
-# REDIS_URL=redis://localhost:6379/0
-```
-
-See `.env.example` for the full list.
-
-## Performance
-
-- **Inference**: < 1 s on Intel i5 (MobileNet + NanoSAM)
-- **Throughput**: 30+ inspections/minute
-- **Memory**: < 4 GB RAM
-- **Detection Accuracy**: > 85% mAP (COCO)
-- **Segmentation Accuracy**: > 80% IoU
-
-## Integrations
-
-| Protocol | Purpose |
-|---|---|
-| **Modbus TCP** | PLC register write on each inspection result |
-| **MQTT** | Publish inspection events to IoT broker |
-| **OPC-UA** | Industry-standard machine connectivity (port 4840) |
-| **Webhooks** | HTTP callbacks to external systems |
-| **REST API** | Full programmatic access |
-| **Email** | Alert notifications |
-
-## Technology Stack
-
-- **Backend**: Python 3.11, FastAPI, SQLAlchemy, Alembic
-- **ML/CV**: PyTorch, TorchVision, ONNX Runtime, OpenCV, OpenVINO (optional)
-- **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Chart.js, Radix UI
-- **Database**: SQLite (dev) / PostgreSQL (production)
-- **Cache**: Redis (optional) / in-process LRU fallback
-- **Testing**: pytest (437 tests)
-- **Deployment**: Docker Compose (7 services), nginx, Prometheus, Grafana
-
-## Development
-
-### Running in Development Mode
-
-```bash
-# Backend (hot-reload)
-cd ussop
-DEBUG=true python run.py
-
-# Frontend (hot-reload, proxies /api to :8080)
-cd ussop/frontend
-npm run dev
-```
-
-### Contributing
+## 🤝 Contributing
 
 1. Create a branch: `git checkout -b feature/name`
 2. Make changes and test: `pytest tests/ -v`
 3. Commit: `git commit -am "Add feature"`
 4. Push and open a Pull Request
 
-## License
-
-MIT License — See LICENSE file for details.
-
-## Support
-
-- **Email**: founders@ussop.ai
-- **Docs**: `/docs` directory
-- **API**: `http://localhost:8080/docs`
-
 ---
 
-**Ussop v2.0** — Sniper precision. Enterprise ready.
+## 📄 License & Support
 
-*"Every defect is a target, and we never miss."*
+- **License**: MIT License — See [LICENSE](LICENSE) file for details.
+- **Support**: founders@ussop.ai
+
+> **Ussop v2.0** — Sniper precision. Enterprise ready.
+> *"Every defect is a target, and we never miss."*

@@ -273,53 +273,57 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
         {user && (
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger className="flex items-center gap-2 lg:gap-4 py-1.5 pl-2 pr-3 lg:pr-4 rounded-xl transition-all outline-none border border-transparent group"
-                                  style={{ color: 'var(--text)' }}>
-              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl border-2 flex items-center justify-center transition-all group-hover:scale-105 group-hover:border-olive-200 shadow-sm relative overflow-hidden"
-                   style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
-                <User size={18} weight="bold" className="group-hover:text-olive-600 transition-colors"
-                      style={{ color: 'var(--muted)' }} />
+            <DropdownMenu.Trigger className="flex items-center gap-3 p-1.5 pr-4 lg:pr-5 rounded-2xl transition-all outline-none border group hover:border-olive-200 hover:shadow-lg hover:shadow-olive-900/5 cursor-pointer"
+                                  style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+              <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center transition-all bg-slate-50 group-hover:bg-olive-50 group-hover:scale-105">
+                <User size={18} weight="bold" className="text-slate-400 group-hover:text-olive-600 transition-colors" />
               </div>
-              <div className="text-left py-0.5 hidden md:block">
-                <p className="text-xs font-semibold tracking-tighter mb-0.5 leading-none"
-                   style={{ color: 'var(--text)' }}>
+              <div className="text-left hidden md:flex flex-col justify-center">
+                <p className="text-[12px] font-bold tracking-tight leading-none mb-1.5 text-slate-800" style={{ color: 'var(--text)' }}>
                   {user.username}
                 </p>
-                <span className="text-[9px] font-semibold text-olive-600/80 tracking-wider bg-olive-50 px-2 py-0.5 rounded-md leading-none">
-                  {user.roles?.[0] || 'Personnel'}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-olive-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-olive-600"></span>
+                  </span>
+                  <span className="text-[9px] font-bold text-olive-600 uppercase tracking-widest leading-none">
+                    {user.roles?.[0] || 'Personnel'}
+                  </span>
+                </div>
               </div>
-              <CaretDown size={14} weight="bold" className="group-hover:translate-y-0.5 transition-transform ml-1"
-                         style={{ color: 'var(--border)' }} />
+              <CaretDown size={14} weight="bold" className="group-hover:translate-y-0.5 transition-transform ml-2 text-slate-300 group-hover:text-olive-600" />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
               <DropdownMenu.Content align="end" sideOffset={16}
-                                    className="w-64 sm:w-72 rounded-2xl border p-3 z-50 animate-in shadow-2xl"
+                                    className="w-64 sm:w-[280px] rounded-[24px] border p-2 z-50 animate-in shadow-2xl flex flex-col gap-1"
                                     style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
-                <div className="px-6 py-6 mb-3 rounded-xl border"
-                     style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
-                  <p className="text-sm font-semibold tracking-tighter mb-2 leading-none"
+                <div className="px-5 py-5 mb-1 rounded-[20px]"
+                     style={{ background: 'var(--surface-2)' }}>
+                  <p className="text-[15px] font-bold tracking-tight mb-1"
                      style={{ color: 'var(--text)' }}>
                     {user.username}
                   </p>
-                  <p className="text-[10px] font-bold truncate tracking-wider"
+                  <p className="text-[12px] font-semibold truncate tracking-wider"
                      style={{ color: 'var(--muted)' }}>
-                    {user.email || user.roles?.join(', ')}
+                    {user.email || 'admin@ussop.local'}
                   </p>
                 </div>
+                
                 <DropdownMenu.Item onSelect={() => setSettingsOpen(true)}
-                                    className="flex items-center gap-4 px-5 py-4 text-[11px] font-semibold tracking-tight rounded-xl cursor-pointer outline-none transition-all group hover:bg-olive-50"
+                                    className="flex items-center gap-4 px-3 py-2.5 text-[12.5px] font-bold tracking-tight rounded-[18px] cursor-pointer outline-none transition-all group hover:bg-slate-50/80"
                                     style={{ color: 'var(--text-2)' }}>
-                  <div className="p-2 rounded-xl transition-colors group-hover:bg-olive-50"
-                       style={{ background: 'var(--surface-2)' }}>
+                  <div className="p-3 rounded-[14px] bg-slate-50 text-slate-500 group-hover:bg-white group-hover:shadow-sm transition-all border border-transparent group-hover:border-slate-100">
                     <GearSix size={18} weight="bold" />
                   </div>
                   Account Settings
                 </DropdownMenu.Item>
-                <div className="h-px my-2 mx-3" style={{ background: 'var(--border-subtle)' }} />
+                
+                <div className="h-px my-1.5 mx-4" style={{ background: 'var(--border-subtle)' }} />
+                
                 <DropdownMenu.Item onClick={logout}
-                                    className="flex items-center gap-4 px-5 py-4 text-[11px] font-semibold tracking-tight text-red-600 rounded-xl cursor-pointer hover:bg-red-50 outline-none transition-all group">
-                  <div className="p-2 rounded-xl bg-red-50 transition-colors">
+                                    className="flex items-center gap-4 px-3 py-2.5 text-[12.5px] font-bold tracking-tight text-red-600 rounded-[18px] cursor-pointer hover:bg-red-50/50 outline-none transition-all group">
+                  <div className="p-3 rounded-[14px] bg-red-50 text-red-500 group-hover:bg-red-100 transition-colors border border-transparent">
                     <SignOut size={18} weight="bold" />
                   </div>
                   Sign Out

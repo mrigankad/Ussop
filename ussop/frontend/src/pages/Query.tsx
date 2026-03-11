@@ -47,32 +47,33 @@ export default function Query() {
   }
 
   return (
-    <div className="space-y-6 animate-in max-w-3xl mx-auto">
-      <div className="flex items-center gap-3 bg-white/40 p-3 rounded-2xl border border-slate-200/60 shadow-sm backdrop-blur-md">
-        <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center">
-          <Lightning size={16} className="text-violet-600" weight="bold" />
+    <div className="space-y-8 animate-in max-w-4xl mx-auto pb-12">
+      <div className="flex flex-col sm:flex-row items-center gap-4 p-5 rounded-xl border backdrop-blur-md" style={{ background: 'color-mix(in srgb, var(--surface) 40%, transparent)', borderColor: 'var(--border-subtle)' }}>
+        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm border" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+          <Lightning size={20} className="text-olive-600" weight="bold" />
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-700">AI Query Assistant</p>
-          <p className="text-[11px] text-slate-400 font-medium">Ask questions about your inspection data in plain English</p>
+          <h1 className="text-sm font-semibold tracking-tight" style={{ color: 'var(--text)' }}>AI Search</h1>
+          <p className="text-[11px] font-bold mt-1 tracking-wider" style={{ color: 'var(--muted)' }}>Ask questions about your inspection data</p>
         </div>
       </div>
 
-      <Card className="flex flex-col" style={{ minHeight: '480px' }}>
-        <CardContent className="flex-1 overflow-y-auto p-6 space-y-4" style={{ maxHeight: '480px' }}>
+      <Card className="flex flex-col overflow-hidden shadow-2xl shadow-slate-900/5" style={{ minHeight: '600px', borderColor: 'var(--border-subtle)' }}>
+        <CardContent className="flex-1 overflow-y-auto p-4 sm:p-10 space-y-6" style={{ maxHeight: '600px', background: 'var(--surface-2)' }}>
           {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center gap-6 py-8">
-              <div className="w-16 h-16 rounded-2xl bg-violet-50 border border-violet-100 flex items-center justify-center shadow-sm">
-                <Robot size={32} weight="duotone" className="text-violet-600" />
+            <div className="h-full flex flex-col items-center justify-center gap-10 py-16">
+              <div className="w-24 h-24 rounded-2xl border flex items-center justify-center shadow-xl shadow-slate-900/5 transition-transform hover:scale-110 duration-500" style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+                <Robot size={48} weight="duotone" className="text-olive-600" />
               </div>
-              <div className="text-center">
-                <p className="text-sm font-extrabold text-slate-800">Ask anything about your data</p>
-                <p className="text-xs text-slate-400 font-medium mt-1">Powered by the configured VLM backend</p>
+              <div className="text-center space-y-2">
+                <h2 className="text-lg font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Search your data</h2>
+                <p className="text-[11px] font-bold tracking-wider" style={{ color: 'var(--muted)' }}>AI-powered inspection analytics</p>
               </div>
-              <div className="grid grid-cols-2 gap-2 w-full max-w-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl px-4">
                 {SUGGESTIONS.map(s => (
                   <button key={s} onClick={() => send(s)}
-                    className="text-left text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-violet-50 hover:text-violet-700 border border-slate-200 hover:border-violet-200 rounded-xl px-4 py-3 transition-all">
+                    className="text-left text-xs font-bold transition-all shadow-sm hover:shadow-lg hover:shadow-olive-900/20 rounded-xl px-6 py-4 border hover:bg-olive-600 hover:text-white"
+                    style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' }}>
                     {s}
                   </button>
                 ))}
@@ -81,70 +82,71 @@ export default function Query() {
           )}
 
           {messages.map((m, i) => (
-            <div key={i} className={`flex gap-3 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${
-                m.role === 'user' ? 'bg-indigo-50 border-indigo-100' :
-                m.role === 'error' ? 'bg-red-50 border-red-100' : 'bg-violet-50 border-violet-100'
-              }`}>
+            <div key={i} className={`flex gap-5 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'} animate-in slide-in-from-bottom-2 duration-500`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border shadow-sm ${
+                m.role === 'user' ? '' :
+                m.role === 'error' ? 'bg-red-50 border-red-100' : 'bg-olive-600 border-olive-600'
+              }`} style={m.role === 'user' ? { background: 'var(--surface)', borderColor: 'var(--border-subtle)' } : undefined}>
                 {m.role === 'user'
-                  ? <User size={14} weight="duotone" className="text-indigo-600" />
-                  : <Robot size={14} weight="duotone" className={m.role === 'error' ? 'text-red-600' : 'text-violet-600'} />
+                  ? <User size={18} weight="bold" className="text-slate-600" />
+                  : <Robot size={18} weight="bold" className={m.role === 'error' ? 'text-red-600' : 'text-white'} />
                 }
               </div>
-              <div className={`flex-1 max-w-[85%] ${m.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
-                <div className={`px-4 py-3 rounded-2xl text-sm font-medium leading-relaxed whitespace-pre-wrap ${
+              <div className={`flex-1 max-w-[85%] ${m.role === 'user' ? 'items-end' : 'items-start'} flex flex-col gap-2`}>
+                <div className={`px-6 py-4 rounded-xl text-[13px] font-bold leading-relaxed whitespace-pre-wrap shadow-sm ${
                   m.role === 'user'
-                    ? 'bg-indigo-600 text-white rounded-tr-sm shadow-[0_4px_15px_rgba(79,70,229,0.2)]'
+                    ? 'bg-slate-900 text-white rounded-tr-none'
                     : m.role === 'error'
-                    ? 'bg-red-50 text-red-700 border border-red-100 rounded-tl-sm'
-                    : 'bg-white text-slate-700 border border-slate-100 rounded-tl-sm shadow-sm'
-                }`}>
+                    ? 'bg-white text-red-700 border border-red-100 rounded-tl-none'
+                    : 'border rounded-tl-none shadow-olive-900/5'
+                }`} style={(m.role === 'assistant' || m.role === 'error') ? { background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--text)' } : undefined}>
                   {m.text}
                 </div>
                 {m.backend && (
-                  <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 px-1">
-                    <Info size={10} /> via {m.backend}
-                  </p>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-100/50 rounded-full border border-slate-50">
+                    <span className="text-[10px] text-slate-400 font-semibold tracking-tighter">Strategy: {m.backend}</span>
+                  </div>
                 )}
               </div>
             </div>
           ))}
 
           {loading && (
-            <div className="flex gap-3">
-              <div className="w-8 h-8 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 shadow-sm">
-                <Robot size={14} weight="duotone" className="text-violet-600" />
+            <div className="flex gap-5 animate-pulse">
+              <div className="w-10 h-10 rounded-xl bg-olive-600 border border-olive-600 flex items-center justify-center shrink-0 shadow-lg shadow-olive-900/20">
+                <Robot size={18} weight="bold" className="text-white" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white border border-slate-100 shadow-sm flex items-center gap-2">
-                <Spinner size={14} className="text-violet-500 animate-spin" />
-                <span className="text-sm text-slate-400 font-medium">Thinking…</span>
+              <div className="px-6 py-4 rounded-xl rounded-tl-none border border-slate-50 flex items-center gap-3 shadow-sm" style={{ background: 'var(--surface)' }}>
+                <Spinner size={16} weight="bold" className="text-olive-600 animate-spin" />
+                <span className="text-[11px] text-slate-400 font-semibold tracking-wider">Searching...</span>
               </div>
             </div>
           )}
           <div ref={bottomRef} />
         </CardContent>
 
-        <div className="border-t border-slate-100 p-4">
-          <div className="flex gap-3 items-end">
+        <div className="border-t border-slate-50 p-8 bg-white">
+          <div className="flex flex-col sm:flex-row gap-4 items-end max-w-4xl mx-auto">
             <textarea
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Ask a question about your inspection data… (Enter to send, Shift+Enter for newline)"
+              placeholder="Ask a question..."
               rows={2}
-              className="flex-1 resize-none px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-300 focus:border-violet-300 transition-all"
+              className="flex-1 resize-none px-6 py-4 rounded-xl border text-[13px] font-bold placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-olive-50 focus:border-olive-200 transition-all focus:bg-white w-full"
+              style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }}
             />
             <Button
               variant="primary"
               onClick={() => send()}
               disabled={!input.trim() || loading}
-              className="gap-2 bg-violet-600 hover:bg-violet-700 text-white border-transparent shadow-[0_2px_10px_rgba(124,58,237,0.3)] hover:shadow-[0_4px_15px_rgba(124,58,237,0.4)] transition-all disabled:opacity-50 h-12 px-5"
+              className="w-16 h-16 rounded-xl flex items-center justify-center p-0 shrink-0"
             >
-              <PaperPlaneRight size={16} weight="bold" />
+              <PaperPlaneRight size={24} weight="bold" />
             </Button>
           </div>
-          <p className="text-[10px] text-slate-400 font-medium mt-2 text-center">
-            Queries use recent statistics as context. VLM must be enabled in Configuration.
+          <p className="text-[10px] font-bold mt-6 text-center tracking-tight opacity-60" style={{ color: 'var(--muted)' }}>
+            AI engine is active and analyzing your dataset
           </p>
         </div>
       </Card>

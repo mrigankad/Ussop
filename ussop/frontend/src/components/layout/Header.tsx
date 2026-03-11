@@ -1,21 +1,70 @@
+import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import * as Dialog from '@radix-ui/react-dialog'
-import { User, SignOut, CaretDown, WifiHigh, WifiSlash, GearSix, X, FloppyDisk, Key } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { User, SignOut, CaretDown, WifiHigh, WifiSlash, GearSix, X, Key, List, Sun, Moon } from '@phosphor-icons/react'
 import { api } from '@/lib/api'
 
 const titles: Record<string, { title: string; sub: string }> = {
-  '/': { title: 'Dashboard', sub: 'Overview & recent activity' },
-  '/inspect': { title: 'Inspect', sub: 'Run AI visual inspection' },
-  '/history': { title: 'History', sub: 'All inspection records' },
-  '/analytics': { title: 'Analytics', sub: 'Trends & performance metrics' },
-  '/annotate': { title: 'Annotate', sub: 'Active learning queue' },
-  '/batch': { title: 'Batch', sub: 'Process image folders' },
-  '/query': { title: 'AI Query', sub: 'Ask questions about your inspection data' },
-  '/stations': { title: 'Stations', sub: 'Multi-station overview and health' },
-  '/alerts': { title: 'Alerts', sub: 'System notifications and warnings' },
-  '/config': { title: 'Configuration', sub: 'System settings' },
+  '/': { title: 'Dashboard', sub: 'Overview of system status and metrics' },
+  '/inspect': { title: 'Inspect', sub: 'Analyze images and capture samples' },
+  '/history': { title: 'History', sub: 'Review past inspection records' },
+  '/analytics': { title: 'Analytics', sub: 'View trends and performance data' },
+  '/annotate': { title: 'Annotate', sub: 'Verify samples and improve model' },
+  '/batch': { title: 'Batch', sub: 'Run processing tasks on folders' },
+  '/query': { title: 'AI Search', sub: 'Ask questions about your data' },
+  '/stations': { title: 'Stations', sub: 'Monitor production lines' },
+  '/alerts': { title: 'Alerts', sub: 'System notifications and logs' },
+  '/config': { title: 'Configuration', sub: 'Manage global system settings and parameters' },
+}
+
+function Breadcrumbs() {
+  const { pathname } = useLocation()
+  const paths = pathname.split('/').filter(Boolean)
+  
+  return (
+    <nav className="flex items-center gap-2 text-[10px] sm:text-[11px] font-bold tracking-wider" style={{ color: 'var(--muted)' }}>
+      <span className="hover:text-olive-600 cursor-pointer transition-colors">Home</span>
+      {paths.map((p, i) => (
+        <React.Fragment key={p}>
+          <span style={{ color: 'var(--border)' }}>/</span>
+          <span className={i === paths.length - 1 ? 'text-olive-600' : 'hover:text-olive-600 cursor-pointer transition-colors'}>
+            {p.charAt(0).toUpperCase() + p.slice(1).replace(/-/g, ' ')}
+          </span>
+        </React.Fragment>
+      ))}
+      {paths.length === 0 && (
+        <>
+          <span style={{ color: 'var(--border)' }}>/</span>
+          <span className="text-olive-600">Dashboard</span>
+        </>
+      )}
+    </nav>
+  )
+}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(() =>
+    document.documentElement.getAttribute('data-theme') === 'dark'
+  )
+
+  function toggle() {
+    const next = !dark
+    setDark(next)
+    document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light')
+    localStorage.setItem('theme', next ? 'dark' : 'light')
+  }
+
+  return (
+    <button
+      onClick={toggle}
+      className="w-10 h-10 rounded-xl flex items-center justify-center border transition-all hover:scale-105 active:scale-95"
+      style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--text-2)' }}
+      aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {dark ? <Sun size={18} weight="bold" /> : <Moon size={18} weight="bold" />}
+    </button>
+  )
 }
 
 function HealthBadge() {
@@ -28,12 +77,12 @@ function HealthBadge() {
   }, [])
   if (healthy === null) return null
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${healthy
-        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-[0_2px_10px_rgba(16,185,129,0.08)]'
-        : 'bg-red-50 text-red-600 border-red-100 shadow-[0_2px_10px_rgba(239,68,68,0.08)]'
+    <div className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-semibold tracking-wider border transition-all ${healthy
+        ? 'bg-emerald-50 text-emerald-600 border-emerald-100 shadow-sm'
+        : 'bg-red-50 text-red-600 border-red-100 shadow-sm animate-pulse'
       }`}>
-      {healthy ? <WifiHigh size={12} weight="bold" className="animate-pulse" /> : <WifiSlash size={12} weight="bold" />}
-      {healthy ? 'System Online' : 'System Offline'}
+      {healthy ? <WifiHigh size={14} weight="bold" /> : <WifiSlash size={14} weight="bold" />}
+      <span className="hidden md:inline">{healthy ? 'Operational' : 'Disconnected'}</span>
     </div>
   )
 }
@@ -53,7 +102,7 @@ function AccountSettingsModal({ open, onClose, user }: { open: boolean; onClose:
       await api.updateMe({ email })
       const stored = JSON.parse(localStorage.getItem('user') || '{}')
       localStorage.setItem('user', JSON.stringify({ ...stored, email }))
-      setMsg({ type: 'success', text: 'Profile updated.' })
+      setMsg({ type: 'success', text: 'Profile updated successfully.' })
     } catch { setMsg({ type: 'error', text: 'Failed to update profile.' }) }
     finally { setSaving(false) }
   }
@@ -64,80 +113,103 @@ function AccountSettingsModal({ open, onClose, user }: { open: boolean; onClose:
     setSaving(true); setMsg(null)
     try {
       await api.changePassword(currentPw, newPw)
-      setMsg({ type: 'success', text: 'Password changed.' })
+      setMsg({ type: 'success', text: 'Password changed successfully.' })
       setCurrentPw(''); setNewPw(''); setConfirmPw('')
-    } catch { setMsg({ type: 'error', text: 'Failed — check your current password.' }) }
+    } catch { setMsg({ type: 'error', text: 'Failed — check current credentials.' }) }
     finally { setSaving(false) }
   }
 
   return (
     <Dialog.Root open={open} onOpenChange={v => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 animate-in" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-slate-200 w-full max-w-md p-6 animate-in">
-          <div className="flex items-center justify-between mb-5">
-            <Dialog.Title className="text-lg font-extrabold text-slate-800">Account Settings</Dialog.Title>
-            <button onClick={onClose} className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors">
-              <X size={14} weight="bold" className="text-slate-500" />
+        <Dialog.Overlay className="fixed inset-0 bg-black/10 backdrop-blur-[4px] z-50 animate-in" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 rounded-2xl border w-[95vw] max-w-md p-6 sm:p-10 animate-in shadow-2xl"
+                        style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+          <div className="flex items-center justify-between mb-8 sm:mb-10">
+            <Dialog.Title className="text-xl sm:text-2xl font-semibold tracking-tight"
+                          style={{ color: 'var(--text)' }}>
+              Account Settings
+            </Dialog.Title>
+            <button onClick={onClose} className="w-10 h-10 rounded-2xl border flex items-center justify-center transition-all hover:rotate-90"
+                    style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}
+                    aria-label="Close settings">
+              <X size={16} weight="bold" style={{ color: 'var(--muted)' }} />
             </button>
           </div>
 
-          <div className="flex gap-1 mb-5 p-1 bg-slate-100 rounded-xl">
+          <div className="flex gap-2 mb-8 sm:mb-10 p-2 rounded-2xl border"
+               style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
             {(['profile', 'password'] as const).map(t => (
               <button key={t} onClick={() => { setTab(t); setMsg(null) }}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg capitalize transition-all ${tab === t ? 'bg-white shadow-sm text-slate-800 border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>
-                {t === 'profile' ? <><User size={12} className="inline mr-1.5" />Profile</> : <><Key size={12} className="inline mr-1.5" />Password</>}
+                className={`flex-1 py-3 text-[10px] font-semibold tracking-wider rounded-xl transition-all ${
+                  tab === t
+                    ? 'shadow-lg shadow-slate-900/5'
+                    : ''
+                }`}
+                style={tab === t
+                  ? { background: 'var(--surface)', color: 'var(--text)' }
+                  : { color: 'var(--muted)' }
+                }>
+                {t === 'profile' ? <><User size={14} weight="bold" className="inline mr-2" />Profile</> : <><Key size={14} weight="bold" className="inline mr-2" />Security</>}
               </button>
             ))}
           </div>
 
           {tab === 'profile' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Username</label>
-                <input value={user?.username || ''} disabled className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-500 font-medium cursor-not-allowed" />
+            <div className="space-y-6 sm:space-y-8">
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-semibold tracking-wider pl-2" style={{ color: 'var(--muted)' }}>Username</label>
+                <input value={user?.username || ''} disabled
+                       className="w-full px-6 py-4 rounded-xl border font-bold cursor-not-allowed"
+                       style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' }} />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Email</label>
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-semibold tracking-wider pl-2" style={{ color: 'var(--muted)' }}>Email Address</label>
                 <input value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com"
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all" />
+                       className="w-full px-6 py-4 rounded-xl border font-bold focus:outline-none focus:ring-4 focus:ring-olive-50 transition-all"
+                       style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }} />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Role</label>
-                <input value={(user?.roles || []).join(', ') || 'user'} disabled className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-500 font-medium cursor-not-allowed capitalize" />
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-semibold tracking-wider pl-2" style={{ color: 'var(--muted)' }}>User Role</label>
+                <input value={(user?.roles || []).join(', ') || 'Standard'} disabled
+                       className="w-full px-6 py-4 rounded-xl border font-bold cursor-not-allowed text-[10px] tracking-tight"
+                       style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' }} />
               </div>
             </div>
           )}
 
           {tab === 'password' && (
-            <div className="space-y-4">
+            <div className="space-y-6 sm:space-y-8">
               {[
                 { label: 'Current Password', val: currentPw, set: setCurrentPw },
                 { label: 'New Password', val: newPw, set: setNewPw },
-                { label: 'Confirm New Password', val: confirmPw, set: setConfirmPw },
+                { label: 'Confirm Password', val: confirmPw, set: setConfirmPw },
               ].map(({ label, val, set }) => (
-                <div key={label}>
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">{label}</label>
+                <div key={label} className="flex flex-col gap-3">
+                  <label className="text-[10px] font-semibold tracking-wider pl-2" style={{ color: 'var(--muted)' }}>{label}</label>
                   <input type="password" value={val} onChange={e => set(e.target.value)} placeholder="••••••••"
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 transition-all" />
+                         className="w-full px-6 py-4 rounded-xl border font-bold focus:outline-none focus:ring-4 focus:ring-olive-50 transition-all"
+                         style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }} />
                 </div>
               ))}
             </div>
           )}
 
           {msg && (
-            <div className={`mt-4 px-3 py-2.5 rounded-xl text-xs font-bold border ${msg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+            <div className={`mt-8 px-6 py-4 rounded-xl text-[10px] font-semibold tracking-tight border ${msg.type === 'success' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
               {msg.text}
             </div>
           )}
 
-          <div className="flex gap-3 mt-5">
-            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+          <div className="flex gap-4 mt-10 sm:mt-12">
+            <button onClick={onClose}
+                    className="flex-1 py-4 rounded-xl border text-[10px] font-semibold tracking-wider transition-all active:scale-95"
+                    style={{ borderColor: 'var(--border-subtle)', color: 'var(--muted)' }}>
               Cancel
             </button>
             <button onClick={tab === 'profile' ? saveProfile : handleChangePassword} disabled={saving}
-              className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-sm font-bold text-white flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
-              <FloppyDisk size={14} weight="bold" /> {saving ? 'Saving…' : 'Save Changes'}
+                    className="flex-1 py-4 rounded-xl text-white text-[10px] font-semibold tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50 active:scale-95 shadow-xl bg-olive-600 hover:bg-olive-700">
+              {saving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </Dialog.Content>
@@ -146,9 +218,13 @@ function AccountSettingsModal({ open, onClose, user }: { open: boolean; onClose:
   )
 }
 
-export default function Header() {
+interface HeaderProps {
+  onMenuClick: () => void
+}
+
+export default function Header({ onMenuClick }: HeaderProps) {
   const { pathname } = useLocation()
-  const page = titles[pathname] || { title: 'Ussop', sub: '' }
+  const page = titles[pathname] || { title: 'Ussop Engine', sub: 'Primary Control Interface' }
   const user = (() => { try { return JSON.parse(localStorage.getItem('user') || 'null') } catch { return null } })()
   const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -160,38 +236,93 @@ export default function Header() {
   }
 
   return (
-    <header className="h-20 glass border-b border-slate-200/60 flex items-center justify-between px-8 shrink-0 z-20 sticky top-0 bg-white/70 backdrop-blur-xl">
-      <div>
-        <h1 className="text-xl font-bold text-slate-800 tracking-tight">{page.title}</h1>
-        <p className="text-sm text-slate-500 mt-0.5 font-medium">{page.sub}</p>
+    <header className="h-14 lg:h-16 backdrop-blur-xl border-b flex items-center justify-between px-4 sm:px-6 lg:px-10 shrink-0 z-20 sticky top-0 transition-all"
+            style={{ background: 'color-mix(in srgb, var(--surface) 60%, transparent)', borderColor: 'var(--border-subtle)' }}>
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Hamburger menu — mobile only */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden w-10 h-10 rounded-xl flex items-center justify-center border transition-all hover:scale-105 active:scale-95 shrink-0"
+          style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--text-2)' }}
+          aria-label="Open navigation menu"
+        >
+          <List size={20} weight="bold" />
+        </button>
+
+        <div className="flex flex-col min-w-0 justify-center">
+          <div className="flex items-center gap-3 lg:gap-4 min-w-0">
+            <h1 className="text-lg lg:text-xl font-bold tracking-tighter leading-tight truncate md:min-w-fit"
+                style={{ color: 'var(--text)' }}>
+              {page.title}
+            </h1>
+            <div className="hidden sm:flex items-center gap-3 lg:gap-4 shrink-0">
+              <div className="w-px h-4" style={{ background: 'var(--border-subtle)' }} />
+              <Breadcrumbs />
+            </div>
+          </div>
+          <p className="hidden sm:block text-[10px] font-semibold tracking-wider mt-1 opacity-70 truncate uppercase"
+             style={{ color: 'var(--muted)' }}>
+            {page.sub}
+          </p>
+        </div>
       </div>
-      <div className="flex items-center gap-5">
+
+      <div className="flex items-center gap-3 lg:gap-6 shrink-0">
         <HealthBadge />
+        <ThemeToggle />
+
         {user && (
           <DropdownMenu.Root>
-            <DropdownMenu.Trigger className="flex items-center gap-3 px-3 py-1.5 rounded-2xl hover:bg-slate-50 transition-all outline-none border border-transparent hover:border-slate-200 hover:shadow-sm group">
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition-colors border border-indigo-100/50">
-                <User size={16} weight="duotone" className="text-indigo-600 group-hover:text-indigo-700 transition-colors" />
+            <DropdownMenu.Trigger className="flex items-center gap-2 lg:gap-4 py-1.5 pl-2 pr-3 lg:pr-4 rounded-xl transition-all outline-none border border-transparent group"
+                                  style={{ color: 'var(--text)' }}>
+              <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl border-2 flex items-center justify-center transition-all group-hover:scale-105 group-hover:border-olive-200 shadow-sm relative overflow-hidden"
+                   style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+                <User size={18} weight="bold" className="group-hover:text-olive-600 transition-colors"
+                      style={{ color: 'var(--muted)' }} />
               </div>
-              <div className="text-left py-0.5">
-                <p className="text-sm font-bold text-slate-800 leading-none group-hover:text-indigo-700 transition-colors">{user.username}</p>
-                <p className="text-[11px] font-medium text-slate-400 mt-1 capitalize">{user.roles?.[0] || 'user'}</p>
+              <div className="text-left py-0.5 hidden md:block">
+                <p className="text-xs font-semibold tracking-tighter mb-0.5 leading-none"
+                   style={{ color: 'var(--text)' }}>
+                  {user.username}
+                </p>
+                <span className="text-[9px] font-semibold text-olive-600/80 tracking-wider bg-olive-50 px-2 py-0.5 rounded-md leading-none">
+                  {user.roles?.[0] || 'Personnel'}
+                </span>
               </div>
-              <CaretDown size={14} weight="bold" className="text-slate-400 group-hover:text-slate-600 transition-colors ml-1" />
+              <CaretDown size={14} weight="bold" className="group-hover:translate-y-0.5 transition-transform ml-1"
+                         style={{ color: 'var(--border)' }} />
             </DropdownMenu.Trigger>
             <DropdownMenu.Portal>
-              <DropdownMenu.Content align="end" sideOffset={8} className="w-56 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-slate-100 p-2 z-50 animate-in">
-                <div className="px-3 py-3 mb-1 bg-slate-50 rounded-xl">
-                  <p className="text-sm font-bold text-slate-800">{user.username}</p>
-                  <p className="text-xs font-medium text-slate-500 mt-0.5">{user.email || user.roles?.join(', ')}</p>
+              <DropdownMenu.Content align="end" sideOffset={16}
+                                    className="w-64 sm:w-72 rounded-2xl border p-3 z-50 animate-in shadow-2xl"
+                                    style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+                <div className="px-6 py-6 mb-3 rounded-xl border"
+                     style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+                  <p className="text-sm font-semibold tracking-tighter mb-2 leading-none"
+                     style={{ color: 'var(--text)' }}>
+                    {user.username}
+                  </p>
+                  <p className="text-[10px] font-bold truncate tracking-wider"
+                     style={{ color: 'var(--muted)' }}>
+                    {user.email || user.roles?.join(', ')}
+                  </p>
                 </div>
-                <DropdownMenu.Separator className="h-px bg-slate-100 my-1.5 mx-1" />
-                <DropdownMenu.Item onSelect={() => setSettingsOpen(true)} className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-slate-600 rounded-xl cursor-pointer hover:bg-slate-50 hover:text-indigo-600 outline-none transition-colors">
-                  <GearSix size={16} weight="duotone" /> Account Settings
+                <DropdownMenu.Item onSelect={() => setSettingsOpen(true)}
+                                    className="flex items-center gap-4 px-5 py-4 text-[11px] font-semibold tracking-tight rounded-xl cursor-pointer outline-none transition-all group hover:bg-olive-50"
+                                    style={{ color: 'var(--text-2)' }}>
+                  <div className="p-2 rounded-xl transition-colors group-hover:bg-olive-50"
+                       style={{ background: 'var(--surface-2)' }}>
+                    <GearSix size={18} weight="bold" />
+                  </div>
+                  Account Settings
                 </DropdownMenu.Item>
-                <DropdownMenu.Separator className="h-px bg-slate-100 my-1.5 mx-1" />
-                <DropdownMenu.Item onClick={logout} className="flex items-center gap-2.5 px-3 py-2.5 text-sm font-medium text-red-600 rounded-xl cursor-pointer hover:bg-red-50 hover:text-red-700 outline-none transition-colors">
-                  <SignOut size={16} weight="duotone" /> Sign Out
+                <div className="h-px my-2 mx-3" style={{ background: 'var(--border-subtle)' }} />
+                <DropdownMenu.Item onClick={logout}
+                                    className="flex items-center gap-4 px-5 py-4 text-[11px] font-semibold tracking-tight text-red-600 rounded-xl cursor-pointer hover:bg-red-50 outline-none transition-all group">
+                  <div className="p-2 rounded-xl bg-red-50 transition-colors">
+                    <SignOut size={18} weight="bold" />
+                  </div>
+                  Sign Out
                 </DropdownMenu.Item>
               </DropdownMenu.Content>
             </DropdownMenu.Portal>

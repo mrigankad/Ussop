@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '@/lib/api'
-import { Crosshair, CircleNotch, Eye, EyeSlash } from '@phosphor-icons/react'
+import { CircleNotch, Eye, EyeSlash } from '@phosphor-icons/react'
+import { toast } from 'sonner'
+import loginBg from '@/assets/login_bg.png'
+import logo from '@/assets/logo.png'
 
 export default function Login() {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [showPass, setShowPass] = useState(false)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -17,7 +19,7 @@ export default function Login() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true); setError('')
+    setLoading(true)
     try {
       const data = await api.login(username, password)
       localStorage.setItem('access_token', data.access_token)
@@ -25,117 +27,86 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(data.user))
       navigate('/', { replace: true })
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid credentials')
+      toast.error(err instanceof Error ? err.message : 'Invalid credentials')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left — decorative panel */}
-      <div className="hidden lg:flex w-1/2 bg-[#0f172a] flex-col justify-between p-12 relative overflow-hidden">
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-          backgroundSize: '40px 40px'
-        }} />
-        {/* Glow */}
-        <div className="absolute top-1/3 left-1/3 w-64 h-64 bg-indigo-600 rounded-full blur-[120px] opacity-20" />
-
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <Crosshair size={20} className="text-white" />
-            </div>
-            <span className="text-white font-bold text-xl">Ussop</span>
-          </div>
+    <div className="h-screen flex p-2 sm:p-4 font-sans" style={{ background: 'var(--bg)' }}>
+      <div className="flex flex-1 w-full rounded sm:rounded-md overflow-hidden border"
+           style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+        {/* Left — image panel (hidden on mobile) */}
+        <div
+          className="hidden lg:flex w-1/2 bg-slate-900 bg-cover bg-center"
+          style={{ backgroundImage: `url(${loginBg})` }}
+        >
+          <div className="w-full h-full bg-olive-900/10 backdrop-brightness-90" />
         </div>
 
-        <div className="relative space-y-6">
-          <div>
-            <p className="text-4xl font-bold text-white leading-snug">
-              Sniper precision.<br />
-              <span className="text-indigo-400">Slingshot simple.</span>
-            </p>
-            <p className="text-slate-400 mt-4 text-sm leading-relaxed max-w-xs">
-              AI-powered visual inspection for manufacturing.
-              Detects defects in real time on standard hardware — no GPU required.
-            </p>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: 'Inspection', value: '< 1s' },
-              { label: 'mAP Score', value: '> 0.85' },
-              { label: 'RAM Usage', value: '< 4 GB' },
-            ].map(({ label, value }) => (
-              <div key={label} className="bg-white/[0.04] rounded-xl p-4 border border-white/[0.06]">
-                <p className="text-xl font-bold text-indigo-400">{value}</p>
-                <p className="text-xs text-slate-500 mt-1">{label}</p>
+        {/* Right — login form */}
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-8"
+             style={{ background: 'var(--surface)' }}>
+          <div className="w-full max-w-sm">
+            <div className="flex flex-col items-center mb-10 sm:mb-12 text-center">
+              <div className="mb-4 flex items-center justify-center scale-150 transition-transform hover:scale-175 duration-500">
+                <img src={logo} alt="Logo" className="h-20 sm:h-24 w-auto object-contain" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        <p className="relative text-xs text-slate-600">© 2026 Ussop · AI Visual Inspection</p>
-      </div>
-
-      {/* Right — login form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-[#f8fafc]">
-        <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-              <Crosshair size={16} className="text-white" />
+              <h1 className="text-3xl sm:text-4xl font-semibold tracking-tighter mb-2"
+                  style={{ color: 'var(--text)' }}>Welcome Back</h1>
+              <p className="text-sm font-bold" style={{ color: 'var(--muted)' }}>Sign in to manage your inspections</p>
             </div>
-            <span className="font-bold text-slate-900">Ussop</span>
-          </div>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
-            <p className="text-slate-500 text-sm mt-1">Sign in to your inspector dashboard</p>
-          </div>
-
-          {error && (
-            <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 capitalize">Username</label>
-              <input
-                type="text" value={username} onChange={e => setUsername(e.target.value)}
-                placeholder="Enter your username" required autoFocus autoComplete="username"
-                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow placeholder:text-slate-300 shadow-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1.5 capitalize">Password</label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="login-username" className="text-xs font-bold"
+                       style={{ color: 'var(--muted)' }}>Username</label>
                 <input
-                  type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                  placeholder="Enter your password" required autoComplete="current-password"
-                  className="w-full px-4 py-3 pr-11 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-shadow placeholder:text-slate-300 shadow-sm"
+                  id="login-username"
+                  type="text" value={username} onChange={e => setUsername(e.target.value)}
+                  placeholder="Admin" required autoFocus autoComplete="username"
+                  className="w-full px-4 py-3.5 rounded border focus:outline-none focus:ring-2 focus:ring-olive-50 focus:border-olive-600 transition-all font-medium"
+                  style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }}
                 />
-                <button type="button" onClick={() => setShowPass(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                  {showPass ? <EyeSlash size={16} /> : <Eye size={16} />}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="login-password" className="text-xs font-bold"
+                         style={{ color: 'var(--muted)' }}>Password</label>
+                  <a href="#" className="text-[11px] font-bold text-olive-600 hover:text-olive-700 transition-colors">Forgot Password?</a>
+                </div>
+                <div className="relative">
+                  <input
+                    id="login-password"
+                    type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="••••••••" required autoComplete="current-password"
+                    className="w-full px-4 py-3.5 rounded border focus:outline-none focus:ring-2 focus:ring-olive-50 focus:border-olive-600 transition-all font-medium pr-12"
+                    style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)', color: 'var(--text)' }}
+                  />
+                  <button type="button" onClick={() => setShowPass(v => !v)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                          style={{ color: 'var(--muted)' }}
+                          aria-label={showPass ? 'Hide password' : 'Show password'}>
+                    {showPass ? <EyeSlash size={20} weight="bold" /> : <Eye size={20} weight="bold" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4">
+                <button
+                  type="submit" disabled={loading}
+                  className="w-full py-4 rounded bg-olive-600 hover:bg-olive-700 text-white font-bold text-[15px] transition-all disabled:opacity-50 active:scale-[0.98]"
+                >
+                  {loading && <CircleNotch size={18} className="animate-spin inline mr-2" />}
+                  {loading ? 'Entering...' : 'Sign In'}
                 </button>
               </div>
-            </div>
-            <button
-              type="submit" disabled={loading}
-              className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold text-sm hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors shadow-md shadow-indigo-200 mt-2"
-            >
-              {loading && <CircleNotch size={16} className="animate-spin" />}
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
-          </form>
+            </form>
 
-          <p className="text-center text-xs text-slate-400 mt-6">
-            Contact your administrator to reset your password.
-          </p>
+
+          </div>
         </div>
       </div>
     </div>

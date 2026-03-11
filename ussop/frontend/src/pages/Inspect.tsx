@@ -71,13 +71,13 @@ function CameraTab({ onCapture }: { onCapture: (file: File) => void }) {
       </div>
       <div className="flex gap-2">
         {!stream
-          ? <button onClick={startCamera} className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 flex items-center justify-center gap-1.5"><Camera size={14}/> Start Camera</button>
+          ? <button onClick={startCamera} className="flex-1 py-3 bg-olive-600 text-white rounded-xl text-[11px] font-bold hover:bg-olive-700 flex items-center justify-center gap-2 transition-all"><Camera size={14} weight="bold"/> Start Camera</button>
           : <>
-              <button onClick={capture} className="flex-1 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 flex items-center justify-center gap-1.5"><Circle size={14}/> Capture</button>
-              <button onClick={stopCamera} className="py-2 px-3 bg-slate-200 text-slate-600 rounded-xl text-sm hover:bg-slate-300"><Square size={14}/></button>
+              <button onClick={capture} className="flex-1 py-3 bg-emerald-600 text-white rounded-xl text-[11px] font-bold hover:bg-emerald-700 flex items-center justify-center gap-2 transition-all"><Circle size={14} weight="bold"/> Capture Image</button>
+              <button onClick={stopCamera} className="py-3 px-4 bg-slate-100 text-slate-500 rounded-xl text-[11px] font-bold hover:bg-slate-200 transition-all"><Square size={14} weight="bold"/></button>
             </>}
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-[11px] font-bold text-red-500 px-2">{error}</p>}
     </div>
   )
 }
@@ -101,7 +101,7 @@ export default function Inspect() {
       const r = await api.inspect(fd)
       setResult(r)
     } catch (e: unknown) {
-      toast(e instanceof Error ? e.message : 'Inspection failed', 'error')
+      toast(e instanceof Error ? e.message : 'Inspection Failed', 'error')
     } finally { setLoading(false) }
   }, [partId, stationId, toast])
 
@@ -113,31 +113,33 @@ export default function Inspect() {
   }
 
   return (
-    <div className="grid grid-cols-[380px_1fr] gap-6">
-      <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 lg:gap-8 animate-in">
+      <div className="space-y-6">
         <Card>
-          <CardContent>
+          <CardContent className="p-8">
             <TabsPrimitive.Root defaultValue="upload">
-              <TabsPrimitive.List className="flex gap-2 mb-4">
+              <TabsPrimitive.List className="flex gap-2 mb-6 p-1.5 bg-slate-50 rounded-xl border border-slate-100">
                 {['upload', 'camera'].map(v => (
                   <TabsPrimitive.Trigger key={v} value={v}
-                    className="flex-1 py-2 text-sm font-medium rounded-xl transition-colors data-[state=active]:bg-indigo-600 data-[state=active]:text-white bg-slate-100 text-slate-600 hover:bg-slate-200 capitalize">
-                    {v === 'upload' ? <span className="flex items-center justify-center gap-1.5"><UploadSimple size={14}/> Upload</span> : <span className="flex items-center justify-center gap-1.5"><Camera size={14}/> Camera</span>}
+                    className="flex-1 py-2.5 text-[11px] font-bold rounded-lg transition-all data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:border-slate-100 data-[state=active]:shadow-sm border border-transparent text-slate-400 hover:text-slate-600">
+                    {v === 'upload' ? <span className="flex items-center justify-center gap-2"><UploadSimple size={14} weight="bold"/> Upload File</span> : <span className="flex items-center justify-center gap-2"><Camera size={14} weight="bold"/> Live Camera</span>}
                   </TabsPrimitive.Trigger>
                 ))}
               </TabsPrimitive.List>
 
               <TabsPrimitive.Content value="upload">
                 <div
-                  className={cn('border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer', dragOver ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-slate-300')}
+                  className={cn('border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer group', dragOver ? 'border-olive-500 bg-olive-50' : 'border-slate-100 bg-slate-50/30 hover:border-slate-200 hover:bg-slate-50/50')}
                   onDragOver={e => { e.preventDefault(); setDragOver(true) }}
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => fileRef.current?.click()}
                 >
-                  <Image size={36} className="mx-auto mb-3 text-slate-400" />
-                  <p className="text-sm font-medium text-slate-600">Drop image here</p>
-                  <p className="text-xs text-slate-400 mt-1">or click to browse</p>
+                  <div className="w-16 h-16 rounded-2xl bg-white border border-slate-100 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                    <Image size={32} weight="bold" className="text-slate-400" />
+                  </div>
+                  <p className="text-xs font-bold" style={{ color: 'var(--text)' }}>Drop image here</p>
+                  <p className="text-[11px] font-bold text-slate-400 mt-1">Or click to browse files</p>
                   <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
                 </div>
               </TabsPrimitive.Content>
@@ -150,104 +152,120 @@ export default function Inspect() {
         </Card>
 
         <Card>
-          <CardContent>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 capitalize mb-1.5">Part ID (optional)</label>
-                <input value={partId} onChange={e => setPartId(e.target.value)} placeholder="e.g. PART-001"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 capitalize mb-1.5">Station ID (optional)</label>
-                <input value={stationId} onChange={e => setStationId(e.target.value)} placeholder="e.g. STATION-A"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              </div>
+          <CardContent className="p-8 space-y-6">
+            <div className="flex flex-col gap-2">
+              <label className="text-[11px] font-bold text-slate-500">Part Serial ID (Optional)</label>
+              <input value={partId} onChange={e => setPartId(e.target.value)} placeholder="e.g. Serial-2024-X"
+                className="w-full px-4 py-3 border border-slate-100 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-olive-50 bg-slate-50/50" />
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[11px] font-bold text-slate-500">Station Identifier (Optional)</label>
+              <input value={stationId} onChange={e => setStationId(e.target.value)} placeholder="e.g. Assembly-Station-01"
+                className="w-full px-4 py-3 border border-slate-100 rounded-xl text-xs font-bold focus:outline-none focus:ring-2 focus:ring-olive-50 bg-slate-50/50" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="min-h-96">
+      <Card className="min-h-[600px] flex flex-col">
         {loading ? (
-          <div className="h-full flex items-center justify-center py-20">
+          <div className="flex-1 flex items-center justify-center p-20">
             <div className="text-center">
-              <CircleNotch size={40} className="animate-spin text-indigo-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">Running inspection…</p>
+              <div className="w-20 h-20 rounded-2xl bg-olive-50 border border-olive-100 flex items-center justify-center mx-auto mb-8 animate-pulse">
+                <CircleNotch size={32} weight="bold" className="animate-spin text-olive-600" />
+              </div>
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Running AI Analysis</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-2">Processing image...</p>
             </div>
           </div>
         ) : result ? (
-          <div>
-            <CardHeader>
-              <div className="flex items-center gap-3">
+          <div className="flex flex-col h-full animate-in">
+            <CardHeader className="px-8 py-6">
+              <div className="flex items-center gap-4">
                 <DecisionBadge decision={result.decision} />
-                <span className="text-sm text-slate-500">{(result.confidence * 100).toFixed(1)}% confidence</span>
+                <span className="text-[11px] font-bold text-slate-400">{(result.confidence * 100).toFixed(1)}% Confidence</span>
               </div>
             </CardHeader>
-            <div className="grid grid-cols-[1fr_240px] gap-4 p-6">
-              <div>
+            <div className="flex-1 p-8 grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-8">
+              <div className="relative group">
                 {(result.annotated_image || result.result_image) ? (
-                  <img src={`/api/v1/images/${result.annotated_image || result.result_image}`} alt="Result" className="w-full rounded-xl border border-slate-200" />
+                  <div className="rounded-2xl overflow-hidden border border-slate-100 bg-slate-50">
+                    <img src={`/api/v1/images/${result.annotated_image || result.result_image}`} alt="Inspection Result" className="w-full h-auto" />
+                  </div>
                 ) : (
-                  <div className="aspect-video bg-slate-100 rounded-xl flex items-center justify-center text-slate-400"><Image size={32} /></div>
+                  <div className="aspect-video bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-center text-slate-400">
+                    <Image size={48} weight="bold" />
+                  </div>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {[
-                  ['Objects Found', result.objects_found],
-                  ['Confidence', `${(result.confidence * 100).toFixed(1)}%`],
-                  ['Detection', `${result.detection_time_ms?.toFixed(0)}ms`],
-                  ['Segmentation', `${result.segmentation_time_ms?.toFixed(0)}ms`],
-                  ['Total Time', `${result.total_time_ms?.toFixed(0)}ms`],
-                ].map(([l, v]) => (
-                  <div key={l as string} className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
-                    <span className="text-xs text-slate-500">{l}</span>
-                    <span className="text-sm font-semibold text-slate-800">{v}</span>
+                  { label: 'Objects Found', value: result.objects_found },
+                  { label: 'Confidence Score', value: `${(result.confidence * 100).toFixed(1)}%` },
+                  { label: 'Detection Time', value: `${result.detection_time_ms?.toFixed(0)}ms` },
+                  { label: 'Segmentation Time', value: `${result.segmentation_time_ms?.toFixed(0)}ms` },
+                  { label: 'Total Processing', value: `${result.total_time_ms?.toFixed(0)}ms` },
+                ].map((row) => (
+                  <div key={row.label} className="flex justify-between items-center p-4 bg-slate-50/50 rounded-xl border border-slate-50">
+                    <span className="text-[11px] font-bold text-slate-500">{row.label}</span>
+                    <span className="text-xs font-bold" style={{ color: 'var(--text)' }}>{row.value}</span>
                   </div>
                 ))}
               </div>
             </div>
+
             {result.vlm_description && (
-              <div className="px-6 pb-4">
-                <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
-                  <p className="text-xs font-bold text-indigo-500 uppercase tracking-wide mb-2">AI Analysis · Llama 3.2 Vision</p>
+              <div className="px-8 pb-8">
+                <div className="p-6 bg-olive-50 border border-olive-100 rounded-xl">
+                  <p className="text-[11px] font-bold text-olive-600 mb-4 flex items-center gap-2">
+                    <Circle size={10} weight="fill" className="animate-pulse" />
+                    AI Analysis Report
+                  </p>
                   <MiniMarkdown text={result.vlm_description} />
                 </div>
               </div>
             )}
+
             {result.detections?.length > 0 && (
-              <div className="px-6 pb-6 border-t border-slate-100 pt-4">
-                <h3 className="text-sm font-semibold text-slate-700 mb-3">Detected Objects</h3>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100">
-                      {['Class', 'Confidence', 'Bounding Box'].map(h => (
-                        <th key={h} className="pb-2 text-left text-xs font-semibold text-slate-500 capitalize">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {result.detections.map((d, i) => (
-                      <tr key={i} className="border-b border-slate-50">
-                        <td className="py-2 font-medium text-slate-700">{d.class_name}</td>
-                        <td className="py-2 text-slate-600">{(d.confidence * 100).toFixed(1)}%</td>
-                        <td className="py-2 text-slate-400 text-xs font-mono">
-                          {d.box
-                            ? `${Math.round(d.box.x1)}, ${Math.round(d.box.y1)}, ${Math.round(d.box.x2)}, ${Math.round(d.box.y2)}`
-                            : d.bbox?.map(v => Math.round(v)).join(', ')}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="px-8 pb-8">
+                <div className="border-t border-slate-50 pt-8">
+                  <h3 className="text-xs font-bold mb-4" style={{ color: 'var(--text)' }}>Detection Breakdown</h3>
+                  <div className="overflow-hidden rounded-xl border border-slate-100">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50/50">
+                        <tr>
+                          {['Class Label', 'Confidence', 'Location Box'].map(h => (
+                            <th key={h} className="px-6 py-3 text-[11px] font-bold text-slate-400">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {result.detections.map((d, i) => (
+                          <tr key={i} className="hover:bg-slate-50/30 transition-colors">
+                            <td className="px-6 py-4 text-xs font-bold" style={{ color: 'var(--text)' }}>{d.class_name}</td>
+                            <td className="px-6 py-4 text-xs font-bold text-slate-500">{(d.confidence * 100).toFixed(1)}%</td>
+                            <td className="px-6 py-4 text-[10px] font-bold text-slate-400 font-mono tracking-tighter">
+                              {d.box
+                                ? `${Math.round(d.box.x1)}, ${Math.round(d.box.y1)}, ${Math.round(d.box.x2)}, ${Math.round(d.box.y2)}`
+                                : d.bbox?.map(v => Math.round(v)).join(', ')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center py-20">
-            <div className="text-center text-slate-400">
-              <Image size={48} className="mx-auto mb-3" />
-              <p className="font-medium text-slate-500">No inspection yet</p>
-              <p className="text-sm mt-1">UploadSimple an image to run inspection</p>
+          <div className="flex-1 flex items-center justify-center p-20">
+            <div className="text-center max-w-xs">
+              <div className="w-20 h-20 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto mb-8">
+                <Image size={32} weight="bold" className="text-slate-300" />
+              </div>
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Waiting for image</p>
+              <p className="text-[11px] font-bold text-slate-400 mt-2 leading-relaxed">Please upload an image or start the camera to begin the inspection process.</p>
             </div>
           </div>
         )}

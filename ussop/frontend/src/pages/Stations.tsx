@@ -35,16 +35,16 @@ function StationCard({ s }: { s: StationSummary }) {
     : 'text-red-700 bg-red-50 border-red-100'
 
   return (
-    <Card className="hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
+    <Card className="hover:-translate-y-0.5 hover: transition-all duration-200">
       <CardHeader>
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-            <Factory size={16} className="text-indigo-600" weight="bold" />
+          <div className="w-8 h-8 rounded-lg bg-olive-50 border border-olive-100 flex items-center justify-center">
+            <Factory size={16} className="text-olive-600" weight="bold" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-800">{s.station_id}</h3>
+            <h3 className="text-sm font-bold" style={{ color: 'var(--text)' }}>{s.station_id}</h3>
             {s.last_time && (
-              <p className="text-[10px] font-medium text-slate-400">
+              <p className="text-[10px] font-medium" style={{ color: 'var(--muted)' }}>
                 Last: {new Date(s.last_time).toLocaleTimeString()}
               </p>
             )}
@@ -59,39 +59,42 @@ function StationCard({ s }: { s: StationSummary }) {
       <CardContent className="pt-0 pb-5">
         <div className="grid grid-cols-2 gap-3 mb-4">
           {[
-            { label: 'Inspections', value: String(s.stats.total_inspections ?? 0), icon: <Pulse size={13} className="text-indigo-500" weight="bold" /> },
-            { label: 'Pass Rate',   value: `${passRate.toFixed(1)}%`,               icon: <CheckCircle size={13} className="text-emerald-500" weight="bold" /> },
-            { label: 'Defects',     value: String((s.stats.failed ?? 0) + (s.stats.uncertain ?? 0)), icon: <WarningCircle size={13} className="text-red-500" weight="bold" /> },
-            { label: 'Avg Time',    value: `${(s.stats.avg_inspection_time_ms ?? 0).toFixed(0)}ms`, icon: <Timer size={13} className="text-amber-500" weight="bold" /> },
+            { label: 'Total Inspections', value: String(s.stats.total_inspections ?? 0), icon: <Pulse size={13} className="text-olive-500" weight="bold" /> },
+            { label: 'Pass Rate %',       value: `${passRate.toFixed(1)}%`,               icon: <CheckCircle size={13} className="text-emerald-500" weight="bold" /> },
+            { label: 'Defects',           value: String((s.stats.failed ?? 0) + (s.stats.uncertain ?? 0)), icon: <WarningCircle size={13} className="text-red-500" weight="bold" /> },
+            { label: 'Avg Cycle time',    value: `${(s.stats.avg_inspection_time_ms ?? 0).toFixed(0)}ms`, icon: <Timer size={13} className="text-amber-500" weight="bold" /> },
           ].map(({ label, value, icon }) => (
-            <div key={label} className="bg-slate-50 rounded-xl px-3 py-2.5 border border-slate-100">
-              <div className="flex items-center gap-1.5 mb-1">{icon}<span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">{label}</span></div>
-              <p className="text-lg font-black text-slate-800 tracking-tight">{value}</p>
+            <div key={label} className="rounded-xl px-4 py-3 border transition-colors" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
+              <div className="flex items-center gap-1.5 mb-1.5">{icon}<span className="text-[10px] font-bold text-slate-400 tracking-tight">{label}</span></div>
+              <p className="text-lg font-semibold tracking-tighter" style={{ color: 'var(--text)' }}>{value}</p>
             </div>
           ))}
         </div>
 
         {s.last_decision && (
-          <div className="flex items-center justify-between px-3 py-2 bg-white border border-slate-100 rounded-xl">
-            <span className="text-[11px] font-bold text-slate-500">Last result</span>
+          <div className="flex items-center justify-between px-4 py-3 border rounded-xl" style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}>
+            <span className="text-[11px] font-bold" style={{ color: 'var(--muted)' }}>Last Result</span>
             <DecisionBadge decision={s.last_decision as any} />
           </div>
         )}
 
         {Object.keys(s.stats.defect_breakdown).length > 0 && (
-          <div className="mt-3 space-y-1.5">
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between items-center px-1 mb-1">
+              <span className="text-[10px] font-bold" style={{ color: 'var(--muted)' }}>Defect Types</span>
+            </div>
             {Object.entries(s.stats.defect_breakdown)
               .sort((a, b) => b[1] - a[1])
               .slice(0, 3)
               .map(([name, count]) => {
                 const max = Math.max(...Object.values(s.stats.defect_breakdown))
                 return (
-                  <div key={name} className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-slate-600 w-20 truncate capitalize">{name}</span>
-                    <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-400 rounded-full" style={{ width: `${(count / max) * 100}%` }} />
+                  <div key={name} className="flex items-center gap-3">
+                    <span className="text-[10px] font-bold w-24 truncate" style={{ color: 'var(--text-2)' }}>{name}</span>
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--surface-2)' }}>
+                      <div className="h-full bg-red-400/80 rounded-full" style={{ width: `${(count / max) * 100}%` }} />
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 w-4 text-right">{count}</span>
+                    <span className="text-[10px] font-bold w-4 text-right" style={{ color: 'var(--muted)' }}>{count}</span>
                   </div>
                 )
               })}
@@ -100,10 +103,10 @@ function StationCard({ s }: { s: StationSummary }) {
 
         <Link
           to={`/history?station_id=${encodeURIComponent(s.station_id)}`}
-          className="mt-3 flex items-center justify-between px-3 py-2 rounded-xl bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 hover:border-indigo-200 transition-all text-[11px] font-bold text-indigo-700 group"
+          className="mt-6 flex items-center justify-between px-4 py-3 rounded-xl bg-olive-50/50 text-olive-700 hover:bg-olive-50 transition-all text-[11px] font-bold group border border-olive-100/50"
         >
-          View history
-          <ArrowRight size={11} weight="bold" className="group-hover:translate-x-0.5 transition-transform" />
+          View History
+          <ArrowRight size={12} weight="bold" className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </CardContent>
     </Card>
@@ -154,23 +157,23 @@ export default function Stations() {
 
   return (
     <div className="space-y-6 animate-in">
-      <div className="flex items-center justify-between bg-white/40 p-3 rounded-2xl border border-slate-200/60 shadow-sm backdrop-blur-md">
-        <p className="text-sm font-semibold text-slate-600 flex items-center gap-2.5 pl-2">
-          <Factory size={16} className="text-indigo-500" weight="bold" />
-          Multi-Station Overview
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border backdrop-blur-md gap-4" style={{ background: 'color-mix(in srgb, var(--surface) 40%, transparent)', borderColor: 'var(--border-subtle)' }}>
+        <p className="text-sm font-bold flex items-center gap-3 pl-2" style={{ color: 'var(--text)' }}>
+          <Factory size={18} className="text-olive-600" weight="bold" />
+          Stations
         </p>
-        <span className="text-xs font-bold text-slate-400 bg-white border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
-          {stations.length} station{stations.length !== 1 ? 's' : ''} active
+        <span className="text-[11px] font-bold border px-4 py-2 rounded-lg shadow-sm" style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' }}>
+          {stations.length} Station{stations.length !== 1 ? 's' : ''} Online
         </span>
       </div>
 
       {stations.length === 0 ? (
         <EmptyState
-          title="No stations found"
-          description="Run inspections with different station_id values to see them here"
+          title="No Active Stations Found"
+          description="Initialize inspections with station identifiers to populate this dashboard"
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
           {stations.map(s => <StationCard key={s.station_id} s={s} />)}
         </div>
       )}

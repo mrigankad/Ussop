@@ -1,6 +1,8 @@
+// Forced reload for UI sync
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AppShell from '@/components/layout/AppShell'
 import { ToastProvider } from '@/components/ui/Toast'
+import { Toaster } from 'sonner'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import Inspect from '@/pages/Inspect'
@@ -16,6 +18,7 @@ import Stations from '@/pages/Stations'
 export default function App() {
   return (
     <ToastProvider>
+      <Toaster position="top-right" richColors theme="system" />
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />

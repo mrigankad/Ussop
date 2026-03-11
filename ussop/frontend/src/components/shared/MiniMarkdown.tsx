@@ -56,7 +56,7 @@ export function MiniMarkdown({ text }: { text: string }) {
     if (bulletMatch) {
       listItems.push(
         <li key={key++} className="flex items-start gap-2 text-sm text-slate-700">
-          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+          <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-olive-400 shrink-0" />
           <span>{renderInline(bulletMatch[1])}</span>
         </li>
       )

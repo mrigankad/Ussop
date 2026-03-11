@@ -3,12 +3,14 @@ import React from 'react'
 
 export function Card({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn(
-      'glass-card rounded-xl text-slate-800 transition-all duration-300 relative overflow-hidden group',
-      className
-    )} {...props}>
-      {/* Subtle top highlight */}
-      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+    <div
+      className={cn(
+        'rounded border transition-all duration-300 relative overflow-hidden group',
+        className
+      )}
+      style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}
+      {...props}
+    >
       {children}
     </div>
   )
@@ -16,12 +18,16 @@ export function Card({ className, children, ...props }: React.HTMLAttributes<HTM
 
 export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn('flex items-center justify-between px-6 py-4 border-b border-slate-100 relative z-10', className)} {...props}>
+    <div
+      className={cn('flex items-center justify-between px-6 sm:px-8 py-5 sm:py-6 border-b relative z-10', className)}
+      style={{ borderColor: 'var(--border-subtle)' }}
+      {...props}
+    >
       {children}
     </div>
   )
 }
 
 export function CardContent({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('p-6 relative z-10', className)} {...props}>{children}</div>
+  return <div className={cn('p-6 sm:p-8 relative z-10', className)} {...props}>{children}</div>
 }

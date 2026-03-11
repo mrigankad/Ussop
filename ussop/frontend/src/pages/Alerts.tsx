@@ -16,10 +16,10 @@ const SEVERITIES = [
 
 function SeverityBadge({ severity }: { severity: Alert['severity'] }) {
   const colors = {
-    info: 'bg-blue-50 text-blue-700 border-blue-100',
-    warning: 'bg-amber-50 text-amber-700 border-amber-100',
-    error: 'bg-red-50 text-red-700 border-red-100',
-    critical: 'bg-red-100 text-red-800 border-red-200',
+    info: 'bg-blue-50/50 text-blue-600 border-blue-100',
+    warning: 'bg-amber-50/50 text-amber-600 border-amber-100',
+    error: 'bg-red-50/50 text-red-600 border-red-100',
+    critical: 'bg-red-100/50 text-red-700 border-red-200',
   }
   return (
     <span className={`text-xs font-bold px-2.5 py-1 rounded-lg border capitalize ${colors[severity]}`}>
@@ -68,8 +68,8 @@ export default function Alerts() {
 
   return (
     <div className="space-y-6 animate-in">
-      <div className="flex items-center justify-between bg-white/40 p-3 rounded-2xl border border-slate-200/60 shadow-sm backdrop-blur-md">
-        <p className="text-sm font-semibold text-slate-600 flex items-center gap-2.5">
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4 rounded-2xl border backdrop-blur-md gap-4" style={{ background: 'color-mix(in srgb, var(--surface) 40%, transparent)', borderColor: 'var(--border-subtle)' }}>
+        <p className="text-sm font-bold flex items-center gap-3 pl-2" style={{ color: 'var(--text)' }}>
           <span className="relative flex h-2.5 w-2.5">
             <span className={`animate-pulse absolute inline-flex h-full w-full rounded-full opacity-75 ${
               alerts.length > 0 ? 'bg-red-400' : 'bg-emerald-400'
@@ -78,33 +78,36 @@ export default function Alerts() {
               alerts.length > 0 ? 'bg-red-500' : 'bg-emerald-500'
             }`}></span>
           </span>
-          System Alerts
+          Alerts
         </p>
-        <div className="text-xs font-bold text-slate-500">{alerts.length} active</div>
+        <div className="text-[11px] font-bold border px-4 py-2 rounded-lg shadow-sm" style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' }}>
+          {alerts.length} Alert{alerts.length !== 1 ? 's' : ''}
+        </div>
       </div>
 
       <Card className="flex flex-col">
-        <CardHeader className="border-b border-slate-100">
+        <CardHeader className="border-b border-slate-50 p-8">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-extrabold text-slate-800">Active Alerts</h2>
-              <p className="text-[11px] font-bold text-slate-500 mt-0.5 capitalize">
-                Unacknowledged system notifications {filter && `• ${filter}`}
+              <h2 className="text-sm font-semibold tracking-tight" style={{ color: 'var(--text)' }}>Active Alerts</h2>
+              <p className="text-[11px] font-bold mt-1" style={{ color: 'var(--muted)' }}>
+                Ongoing system alerts and notifications {filter && `• ${filter}`}
               </p>
             </div>
           </div>
         </CardHeader>
 
-        <div className="flex flex-wrap gap-2 p-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex flex-wrap gap-2 p-6 border-b" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface-2)' }}>
           {SEVERITIES.map(({ value, label, icon: Icon }) => (
             <button
               key={value}
               onClick={() => setFilter(value)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all border ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-bold transition-all border ${
                 filter === value
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-[0_2px_8px_rgba(79,70,229,0.25)]'
-                  : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                  ? 'bg-olive-600 text-white border-olive-600 shadow-lg shadow-olive-900/10'
+                  : 'hover:border-olive-200 hover:text-olive-700'
               }`}
+              style={filter !== value ? { background: 'var(--surface)', borderColor: 'var(--border-subtle)', color: 'var(--muted)' } : undefined}
             >
               <Icon size={14} weight={filter === value ? 'bold' : 'regular'} />
               {label}
@@ -112,66 +115,71 @@ export default function Alerts() {
           ))}
         </div>
 
-        <label className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-100 bg-white text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
+        <label className="flex items-center gap-3 px-8 py-4 border-b text-[11px] font-bold transition-colors cursor-pointer select-none" style={{ borderColor: 'var(--border-subtle)', background: 'var(--surface)', color: 'var(--muted)' }}>
           <input
             type="checkbox"
             checked={showUnacked}
             onChange={e => setShowUnacked(e.target.checked)}
-            className="rounded"
+            className="rounded-lg border-slate-200 text-olive-600 focus:ring-olive-500 w-4 h-4"
           />
-          Show only unacknowledged
+          Filter by unread alerts only
         </label>
 
-        <CardContent className="flex-1 overflow-y-auto p-4" style={{ minHeight: '400px' }}>
+        <CardContent className="flex-1 overflow-y-auto p-8" style={{ minHeight: '500px' }}>
           {loading ? (
-            <div className="flex items-center justify-center h-full gap-2 text-slate-400">
-              <Spinner size={18} className="animate-spin" />
-              <span className="text-sm font-medium">Loading alerts…</span>
+            <div className="flex flex-col items-center justify-center h-full gap-4 text-slate-400">
+              <Spinner size={32} weight="bold" className="animate-spin text-olive-500" />
+              <span className="text-xs font-bold tracking-tight">Synchronizing Analytics Cache…</span>
             </div>
           ) : alerts.length === 0 ? (
-            <EmptyState
-              title={showUnacked ? 'No active alerts' : 'No alerts found'}
-              description={showUnacked ? 'All systems operating normally' : 'Try adjusting filters'}
-            />
+            <div className="py-20">
+              <EmptyState
+                title={showUnacked ? 'Everything Looks Good' : 'No Records Found'}
+                description={showUnacked ? 'No unread alerts at this time' : 'Adjust the filters to see more results'}
+              />
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {alerts.map(alert => (
                 <div
                   key={alert.id}
-                  className="flex items-start gap-4 p-4 rounded-xl border border-slate-100 bg-white hover:shadow-sm hover:border-slate-200 transition-all group"
+                  className="flex flex-col sm:flex-row items-start gap-6 p-6 rounded-xl border transition-all group"
+                  style={{ background: 'var(--surface)', borderColor: 'var(--border-subtle)' }}
                 >
-                  <div className="pt-0.5">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border group-hover:scale-110 transition-transform" style={{ background: 'var(--surface-2)', borderColor: 'var(--border-subtle)' }}>
                     {alert.severity === 'critical' && <X size={20} className="text-red-700" weight="bold" />}
                     {alert.severity === 'error' && <XCircle size={20} className="text-red-600" weight="bold" />}
                     {alert.severity === 'warning' && <WarningCircle size={20} className="text-amber-600" weight="bold" />}
                     {alert.severity === 'info' && <Info size={20} className="text-blue-600" weight="bold" />}
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 mb-1">
-                      <h3 className="text-sm font-bold text-slate-800">{alert.title}</h3>
+                  <div className="flex-1 min-w-0 pt-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-sm font-bold tracking-tight" style={{ color: 'var(--text)' }}>{alert.title}</h3>
                       <SeverityBadge severity={alert.severity} />
                     </div>
-                    <p className="text-sm text-slate-600 mb-2">{alert.message}</p>
-                    <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                      <Clock size={11} />
-                      {new Date(alert.timestamp).toLocaleString()}
-                    </p>
+                    <p className="text-xs font-medium leading-relaxed mb-4" style={{ color: 'var(--muted)' }}>{alert.message}</p>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-bold flex items-center gap-1.5 px-3 py-1 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--muted)' }}>
+                        <Clock size={12} weight="bold" />
+                        {new Date(alert.timestamp).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
 
                   <button
                     onClick={() => acknowledge(alert.id)}
                     disabled={acknowledging === alert.id}
-                    className="shrink-0 px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 hover:border-emerald-200 text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1.5 group-hover:shadow-sm"
+                    className="shrink-0 px-5 py-3 rounded-xl bg-emerald-50/50 text-emerald-700 border border-emerald-100 hover:bg-emerald-50 transition-all text-[11px] font-semibold disabled:opacity-50 flex items-center gap-2 group-hover:scale-105"
                   >
                     {acknowledging === alert.id ? (
                       <>
-                        <Spinner size={12} className="animate-spin" />
-                        Acking…
+                        <Spinner size={14} weight="bold" className="animate-spin" />
+                        Processing...
                       </>
                     ) : (
                       <>
-                        <CheckCircle size={12} weight="bold" />
+                        <CheckCircle size={14} weight="bold" />
                         Acknowledge
                       </>
                     )}

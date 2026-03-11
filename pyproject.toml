@@ -1,0 +1,119 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ussop"
+version = "1.0.0"
+description = "CPU-based AI Visual Inspection for Manufacturing"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Ussop Team", email = "founders@ussop.ai"}
+]
+keywords = ["computer-vision", "manufacturing", "quality-control", "ai", "inspection"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Manufacturing",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.12.0",
+    "torch>=2.0.0",
+    "torchvision>=0.15.0",
+    "onnxruntime>=1.16.0",
+    "opencv-python>=4.8.0",
+    "Pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
+    "reportlab>=4.0.0",
+    "slowapi>=0.1.9",
+    "prometheus-client>=0.19.0",
+    "websockets>=12.0",
+    "redis>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+integrations = [
+    "pymodbus>=3.5.0",
+    "paho-mqtt>=1.6.0",
+    "aiohttp>=3.9.0",
+    "aiosmtplib>=3.0.0",
+    "psycopg2-binary>=2.9.0",
+    "alembic>=1.12.0",
+    "asyncua>=1.0.0",
+    "openvino>=2024.0.0",
+]
+
+[project.urls]
+Homepage = "https://ussop.ai"
+Documentation = "https://github.com/ussop/docs"
+Repository = "https://github.com/ussop/ussop"
+Issues = "https://github.com/ussop/ussop/issues"
+
+[tool.setuptools]
+packages = ["ussop"]
+
+[tool.setuptools.package-data]
+ussop = [
+    "templates/*.html",
+    "static/css/*.css",
+    "static/js/*.js",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | \.eggs
+  | \.pytest_cache
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]  # Line too long (handled by black)
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["ussop/tests"]
+addopts = "-v"
+asyncio_mode = "auto"
